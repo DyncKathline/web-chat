@@ -80,7 +80,7 @@ export default {
 };
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style lang="scss" rel="stylesheet/scss">
 .btn-radius {
   width: 100%;
   height: 40px;

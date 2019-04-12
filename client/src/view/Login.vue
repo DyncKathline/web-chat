@@ -77,7 +77,7 @@
   };
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style lang="scss" rel="stylesheet/scss">
   .login {
     position: absolute;
     left: 0;

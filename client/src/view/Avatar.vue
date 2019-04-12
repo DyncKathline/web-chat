@@ -138,7 +138,7 @@
     }
   };
 </script>
-<style lang="stylus" rel="stylesheet/stylus" scoped>
+<style lang="scss" rel="stylesheet/scss" scoped>
   .wrapper {
     width: 375px;
     height: 375px;
@@ -167,6 +167,6 @@
   }
   .tools {
     display: flex;
-    justify-content center;
+    justify-content: center;
   }
 </style>

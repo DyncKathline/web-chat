@@ -63,8 +63,12 @@ function gethCacheById(id, key) {
 
 function gethAllCache(id) {
     return new Promise((resv, rej) => {
-        const res = Object.keys(cache_data[id]);
-        resv(res);
+        if(cache_data[id]) {
+          const res = Object.keys(cache_data[id]);
+          resv(res);
+        }else {
+          resv({});
+        }
     })
 }
 

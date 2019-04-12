@@ -30,7 +30,7 @@ export default {
   }
 };
 </script>
-<style lang="stylus" rel="stylesheet/stylus" scoped>
+<style lang="scss" rel="stylesheet/scss" scoped>
 .header {
   height: 56px;
 }

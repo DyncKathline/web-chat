@@ -69,4 +69,4 @@ export default {
   }
 };
 </script>
-<style lang="stylus" rel="stylesheet/stylus" scoped src="./index.styl"></style>
+<style lang="scss" rel="stylesheet/scss" scoped src="./index.scss"></style>
