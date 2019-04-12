@@ -19,7 +19,6 @@
 
 <script type="text/ecmascript-6" scoped>
 import { mapState } from "vuex";
-import Toast from "../components/Toast";
 import socket from "../socket";
 
 export default {
@@ -38,7 +37,7 @@ export default {
         };
         this.$store.dispatch("registerSubmit", data).then(res => {
           if (res.status === "success") {
-            Toast({
+            this.$Toast({
               content: res.data.data,
               timeout: 1000,
               background: "#2196f3"

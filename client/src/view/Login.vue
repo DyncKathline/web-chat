@@ -16,7 +16,6 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import Toast from "../components/Toast";
   import socket from "../socket";
 
   export default {
@@ -36,9 +35,9 @@
           };
           this.$store.dispatch("loginSubmit", data).then(res => {
             if (res.status === "success") {
-              Toast({
+              this.$Toast({
                 content: res.data.data,
-                timeout: 1000,
+                timeout: 3000,
                 background: "#2196f3"
               });
               this.$store.commit("setUserInfo", {

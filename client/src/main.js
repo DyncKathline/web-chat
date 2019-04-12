@@ -18,6 +18,8 @@ Vue.prototype.$Alert = Alert;
 import Confirm from './components/Confirm';
 Vue.use(Confirm);
 Vue.prototype.$Confirm = Confirm;
+import Toast from './components/Toast';
+Vue.use(Toast);
 
 Vue.use(MuseUI);
 Vue.config.productionTip = false;

@@ -1,35 +1,13 @@
-.wind-toast {
+.wind-toast{
     position: absolute;
-    z-index: 100000;
-    width: 100%;
-    left: 0;
-    top: 0;
-    display: flex;
-    justify-content: center;
-    transition: opacity 0.7s;
-}
-
-.wind-toast-content {
-    width: 100%;
-    padding: 0 20px;
-    height: 30px;
-    line-height: 30px;
-    font-size: 14px;
-    background: rgba(0, 0, 0, 0.7);
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
     color: #fff;
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 8px;
     text-align: center;
-    animation: appear 0.5s;
-}
-
-.opacity0 {
-    opacity: 0;
-}
-
-@keyframes appear {
-    0% {
-        transform: translate(0, -100%);
-    }
-    100%{
-        transform: translate(0, 0);
-    }
 }

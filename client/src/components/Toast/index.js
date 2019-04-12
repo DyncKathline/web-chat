@@ -1,46 +1,60 @@
-import Vue from 'vue';
-import './index.css';
+import Vue from 'vue'
+import toastMessage from './toast.vue'
 
-const root = window.document.body;
+let ToastTem = Vue.extend(toastMessage);
+let instance;
+let timer = null;
+let defaultOptions = {
+  content: '',
+  timeout: 1500,
+  background: 'rgba(0, 0, 0, 0.7)',
+  color: '#fff',
+  show: false
+};
 
-export default function Toast(config) {
-  const wrap = document.createElement('div');
-  const div = document.createElement('div');
+let Toast = (options) => {
+  if (!instance) {
+    instance = new ToastTem();
+    instance.vm = instance.$mount();
+    document.body.appendChild(instance.vm.$el);
+  }
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+    instance.show = false;
+    instance.content = '';
+  }
+  let time = 3000;
+  if (typeof options === 'string') {
+    instance.content = options
+  } else if (typeof options === 'object') {
+    let newOptions = Object.assign({}, defaultOptions, options);
+    instance.content = newOptions.content;
+    time = newOptions.timeout;
+  } else {
+    return
+  }
+  instance.show = true;
+  timer = setTimeout(() => {
+    instance.show = false;
+    clearTimeout(timer);
+    timer = null;
+    instance.content = '';
+    document.body.removeChild(instance.vm.$el);
+  }, time);
+};
 
-  root.appendChild(wrap);
-  wrap.appendChild(div);
+Toast.close = () => {
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+    instance.show = false;
+    instance.content = '';
+  }
+};
 
-  config = config || {};
+Toast.install = (Vue) => {
+  Vue.prototype.$Toast = Toast
+};
 
-  return new Promise(resolve => new Vue({
-    el: div,
-    data: {
-      content: config.content || '',
-      timeout: config.timeout || 1500,
-      background: config.background || 'rgba(0, 0, 0, 0.7)',
-      color: config.color || '#fff',
-      toast: false
-    },
-    methods: {
-      close() {
-        root.removeChild(wrap);
-        resolve(this);
-      }
-    },
-    mounted() {
-      setTimeout(() => {
-        this.toast = true;
-      }, this.timeout);
-      setTimeout(() => {
-        this.close();
-      }, this.timeout + 1000);
-    },
-    template: `
-      <div class="wind-toast" :class="{'opacity0': toast}">
-        <div class="wind-toast-content" :style="{'background-color': background, 'color': color}">
-          {{content}}
-        </div>
-      </div>
-    `
-  }));
-}
+export default Toast
