@@ -2,15 +2,20 @@ import axios from 'axios';
 
 const baseURL = 'http://localhost:9090';
 
-
 const instance = axios.create();
 
 instance.defaults.timeout = 30000; // 所有接口30s超时
+// instance.defaults.withCredentials = true; // 允许跨域
+
+let token = '';
 
 // 请求统一处理
 instance.interceptors.request.use(config => {
   if (config.url && config.url.charAt(0) === '/') {
     config.url = `${baseURL}${config.url}`;
+    if (config.method === 'post') {
+      // config.headers['Authorization'] = token;
+    }
   }
 
   return config;
@@ -19,6 +24,7 @@ instance.interceptors.request.use(config => {
 // 对返回的内容做统一处理
 instance.interceptors.response.use(response => {
   if (response.status === 200) {
+    // token = response.headers.authorization;
     return response;
   }
   return Promise.reject(response);

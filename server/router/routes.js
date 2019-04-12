@@ -1,14 +1,16 @@
-const User = require('../models/user')
-const Message = require('../models/message')
-const superagent = require('superagent')
-const path = require('path')
-const fs = require('fs')
+const User = require('../models/user');
+const Message = require('../models/message');
+const superagent = require('superagent');
+const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const {cmder, rmDirFiles} = require('../utils/cmd');
 const fileTool = require('fs-extra');
 const imagemin = require('imagemin');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminPngquant = require('imagemin-pngquant');
+const expressJwt = require('express-jwt');
+const userToken = require('../server_modules/userToken');
 
 const mkdirsSync = function (dirname) {
   if (fs.existsSync(dirname)) {
@@ -91,19 +93,19 @@ const uploadAvatar = multer({
 });
 
 module.exports = (app) => {
-  app.all("*", function(req, res, next) {
+  app.all("*", function (req, res, next) {
     res.header("Access-Control-Allow-Origin", req.headers.origin);
     res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-with, X_Request_With");
-    res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-    res.header("X-Powered-By",' 3.2.1');
+    res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+    res.header("X-Powered-By", ' 3.2.1');
     res.header("Content-Type", "application/json;charset=utf-8");
     if (req.method === 'OPTIONS') {
       // 返回结果
       res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested_With, X-Requested-With");
       res.setHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
 
-      res.writeHead(200,{
+      res.writeHead(200, {
         'Content-Type': 'text/html'
       });
 
@@ -112,14 +114,23 @@ module.exports = (app) => {
       next();
     }
     // next();
-  })
-  app.use((req, res, next) => {
-    const _user = req.session.user
+  });
+  //全局设置在app.js中，这样就拦截了除unless函数之外的所以连接，并且自动验证Token
+  app.use(expressJwt({
+    secret: userToken.secretOrPrivateKey
+  }).unless({path: ["/user/signin","/user/signup"]}));
+  app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+      //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
+      res.status(401).send(err);
+      return;
+    }
+    const _user = req.session.user;
 
-    app.locals.user = _user
+    app.locals.user = _user;
 
     next()
-  })
+  });
 
   /* POST upload listing. */
   app.post('/file/uploadimg', upload.single('file'), (req, res, next) => {
@@ -257,106 +268,107 @@ module.exports = (app) => {
         })
       }
     })
-  }),
-    // 登录
-    app.post('/user/signin', (req, res) => {
-      const _user = req.body
-      const name = _user.name
-      const password = _user.password
-      User.findOne({name: name}, (err, user) => {
-        if (err) {
-          global.logger.error(err);
-        }
-        if (!user) {
-          res.json({
-            errno: 1,
-            data: '用户不存在'
+  });
+  // 登录
+  app.post('/user/signin', (req, res) => {
+    const _user = req.body;
+    const name = _user.name;
+    const password = _user.password;
+    User.findOne({name: name}, (err, user) => {
+      if (err) {
+        global.logger.error(err);
+      }
+      if (!user) {
+        res.json({
+          errno: 1,
+          data: '用户不存在'
+        })
+      } else {
+        if (!!password) {
+          user.comparePassword(password, (err, isMatch) => {
+            if (err) {
+              global.logger.error(err);
+            }
+            if (isMatch) {
+              req.session.user = user;
+              global.logger.info('success');
+              res.header('Authorization', userToken.createToken(name));
+              res.json({
+                errno: 0,
+                data: '登录成功',
+                name: name,
+                src: user.src
+              })
+            } else {
+              res.json({
+                errno: 1,
+                data: '密码不正确'
+              })
+              global.logger.info('password is not meached');
+            }
           })
         } else {
-          if (!!password) {
-            user.comparePassword(password, (err, isMatch) => {
-              if (err) {
-                global.logger.error(err);
-              }
-              if (isMatch) {
-                req.session.user = user;
-                global.logger.info('success');
-                res.json({
-                  errno: 0,
-                  data: '登录成功',
-                  name: name,
-                  src: user.src
-                })
-              } else {
-                res.json({
-                  errno: 1,
-                  data: '密码不正确'
-                })
-                global.logger.info('password is not meached');
-              }
-            })
-          } else {
-            res.json({
-              errno: 1,
-              data: '登录失败'
-            })
-          }
-        }
-
-      })
-    }),
-    // 获取历史记录
-    app.get('/history/message', (req, res) => {
-      const id = req.query.roomid;
-      const current = req.query.current;
-      const total = req.query.total || 0;
-      if (!id || !current) {
-        global.logger.error('roomid | page current can\'t find')
-        res.json({
-          errno: 1
-        });
-      }
-      const message = {
-        errno: 0,
-        data: {},
-        total: 0,
-        current: current
-      }
-      try {
-        Message.find({roomid: id}).count().exec((err, messageTotal) => {
-          message.total = messageTotal;
-          let skip = parseInt((current - 1) * 20);
-          if (+total) {
-            skip += (messageTotal - total);
-          }
-          Message.find({roomid: id}).skip(skip).sort({"time": -1}).limit(20).exec((err, messageData) => {
-            message.data = messageData.reverse();
-            res.json({
-              data: message
-            })
-          });
-        });
-      } catch (e) {
-        res.json({
-          data: message
-        })
-      }
-    }),
-    // 机器人消息
-    app.get('/robotapi', (req, res) => {
-      const response = res
-      const info = req.query.info
-      const userid = req.query.id
-      const key = 'fde7f8d0b3c9471cbf787ea0fb0ca043'
-      superagent.post('http://www.tuling123.com/openapi/api')
-        .send({info, userid, key})
-        .end((err, res) => {
-          if (err) {
-            global.logger.error(err)
-          }
-          response.json({
-            data: res.text
+          res.json({
+            errno: 1,
+            data: '登录失败'
           })
-        })
+        }
+      }
+
     })
-}
+  });
+  // 获取历史记录
+  app.get('/history/message', (req, res) => {
+    const id = req.query.roomid;
+    const current = req.query.current;
+    const total = req.query.total || 0;
+    if (!id || !current) {
+      global.logger.error('roomid | page current can\'t find')
+      res.json({
+        errno: 1
+      });
+    }
+    const message = {
+      errno: 0,
+      data: {},
+      total: 0,
+      current: current
+    }
+    try {
+      Message.find({roomid: id}).count().exec((err, messageTotal) => {
+        message.total = messageTotal;
+        let skip = parseInt((current - 1) * 20);
+        if (+total) {
+          skip += (messageTotal - total);
+        }
+        Message.find({roomid: id}).skip(skip).sort({"time": -1}).limit(20).exec((err, messageData) => {
+          message.data = messageData.reverse();
+          res.json({
+            data: message
+          })
+        });
+      });
+    } catch (e) {
+      res.json({
+        data: message
+      })
+    }
+  });
+  // 机器人消息
+  app.get('/robotapi', (req, res) => {
+    const response = res;
+    const info = req.query.info;
+    const userid = req.query.id;
+    const key = 'fde7f8d0b3c9471cbf787ea0fb0ca043';
+    superagent.post('http://www.tuling123.com/openapi/api')
+      .send({info, userid, key})
+      .end((err, res) => {
+        if (err) {
+          global.logger.error(err)
+        }
+        response.json({
+          data: res.text
+        })
+      });
+  });
+};
