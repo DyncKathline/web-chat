@@ -3,9 +3,10 @@ var env = process.env.NODE_ENV || 'development'
 var express = require('express');
 
 // sesstion 存储
-var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')
-var session = require('cookie-session')
+var session = require('express-session');
+var cookieParser = require('cookie-parser');
+
+var bodyParser = require('body-parser');
 // 日志
 var log4js = require('./server_modules/log.js').log4js;
 var logger = require('./server_modules/log.js').logger;
@@ -26,17 +27,22 @@ router.get('/', function (req, res, next) {
 app.use(express.static('./dist'));
 app.use(router);
 // 服务器提交的数据json化
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 // sesstion 存储
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(session({
-  secret: 'vuechat',
-  resave: false,
-  saveUninitialized: true
-}))
+  resave: true, // don't save session if unmodified
+  saveUninitialized: false, // don't create session until something stored
+  secret: 'session_cookie_secret', //密钥
+  name: 'qmai', //这里的name值得是cookie的name，默认cookie的name是：connect.sid
+  cookie: {
+    maxAge: 80000
+  } //设置maxAge是80000ms，即80s后session和相应的cookie失效过期
+}));
 
-require('./router/routes.js')(app)
+
+require('./router/routes.js')(app);
 
 if ('development' === app.get('env')) {
   app.set('showStackError', true)

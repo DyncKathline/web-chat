@@ -9,8 +9,6 @@ const fileTool = require('fs-extra');
 const imagemin = require('imagemin');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminPngquant = require('imagemin-pngquant');
-const expressJwt = require('express-jwt');
-const userToken = require('../server_modules/userToken');
 
 const mkdirsSync = function (dirname) {
   if (fs.existsSync(dirname)) {
@@ -92,6 +90,11 @@ const uploadAvatar = multer({
   fileFilter,
 });
 
+const noSessionRequests = [
+  '/user/signup',
+  '/user/signin',
+];
+
 module.exports = (app) => {
   app.all("*", function (req, res, next) {
     res.header("Access-Control-Allow-Origin", req.headers.origin);
@@ -115,21 +118,19 @@ module.exports = (app) => {
     }
     // next();
   });
-  //全局设置在app.js中，这样就拦截了除unless函数之外的所以连接，并且自动验证Token
-  app.use(expressJwt({
-    secret: userToken.secretOrPrivateKey
-  }).unless({path: ["/user/signin","/user/signup"]}));
-  app.use((err, req, res, next) => {
-    if (err.name === 'UnauthorizedError') {
-      //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-      res.status(401).send(err);
-      return;
-    }
+  app.use((req, res, next) => {
     const _user = req.session.user;
-
     app.locals.user = _user;
-
-    next()
+    if(!_user) {
+      if(noSessionRequests.indexOf(req.url) === -1) {
+        //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
+        res.status(200).send({code: 600, message: 'token not available'});
+      }else {
+        next(); //如果请求的地址是登录则通过，进行下一个请求
+      }
+    }else {
+      next()
+    }
   });
 
   /* POST upload listing. */
@@ -292,7 +293,6 @@ module.exports = (app) => {
             if (isMatch) {
               req.session.user = user;
               global.logger.info('success');
-              res.header('Authorization', userToken.createToken(name));
               res.json({
                 errno: 0,
                 data: '登录成功',

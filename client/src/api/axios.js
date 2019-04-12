@@ -20,7 +20,7 @@ instance.interceptors.request.use(config => {
 // 对返回的内容做统一处理
 instance.interceptors.response.use(response => {
   if (response.status === 200) {
-    if(response.data.status == 401) {//token过期
+    if(response.data.code == 600) {//token过期
       router.replace({
         path: "/login"
       });
