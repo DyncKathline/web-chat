@@ -10,21 +10,30 @@ instance.defaults.timeout = 30000; // 所有接口30s超时
 instance.defaults.withCredentials = true; // 允许跨域
 
 // 请求统一处理
-instance.interceptors.request.use(config => {
-  // if (config.url && config.url.charAt(0) === '/') {
-  //   config.url = `${baseURL}${config.url}`;
-  // }
+instance.interceptors.request.use(request => {
+  const qmai_token = window.localStorage.getItem('qmai_token');
+  if (qmai_token) {
+    // 此处有坑，下方记录
+    //request.headers.common['Authorization'] =`Bearer ${qmai_token}`;
+    request.headers['Authorization'] =`Bearer ${qmai_token}`;
+  }
 
-  return config;
+  return request;
 }, error => Promise.reject(error));
 
 // 对返回的内容做统一处理
 instance.interceptors.response.use(response => {
   if (response.status === 200) {
     if(response.data.code == 600) {//token过期
+      window.localStorage.removeItem('qmai_token');
       router.replace({
         path: "/login"
       });
+    }else {
+      if (response.data.data.token) {
+        console.log('token:', response.data.data.token);
+        window.localStorage.setItem('qmai_token', response.data.data.token);
+      }
     }
     return response;
   }

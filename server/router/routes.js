@@ -9,6 +9,7 @@ const fileTool = require('fs-extra');
 const imagemin = require('imagemin');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminPngquant = require('imagemin-pngquant');
+const {token, jwtAuth} = require('../utils/jwtAuth');
 
 const mkdirsSync = function (dirname) {
   if (fs.existsSync(dirname)) {
@@ -18,7 +19,7 @@ const mkdirsSync = function (dirname) {
     fs.mkdirSync(dirname);
     return true;
   }
-}
+};
 
 // 创建文件夹
 const createFolder = function (folder) {
@@ -105,35 +106,23 @@ module.exports = (app) => {
     res.header("Content-Type", "application/json;charset=utf-8");
     if (req.method === 'OPTIONS') {
       // 返回结果
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested_With, X-Requested-With");
-      res.setHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");
-
-      res.writeHead(200, {
-        'Content-Type': 'text/html'
-      });
-
-      res.end("options OK");
+      res.send(200);/*让options请求快速返回*/
     } else {
       next();
     }
-    // next();
   });
-  app.use((req, res, next) => {
-    const _user = req.session.user;
-    app.locals.user = _user;
-    if(!_user) {
-      if(noSessionRequests.indexOf(req.url) === -1) {
-        //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-        res.status(200).json({
-          code: 600,
-          message: 'token not available'
-        });
-      }else {
-        next(); //如果请求的地址是登录则通过，进行下一个请求
-      }
-    }else {
-      next()
+  app.use(jwtAuth(noSessionRequests));
+  app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+      //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
+      res.status(200).json({
+        code: 600,
+        message: err
+      });
+      return;
     }
+
+    next();
   });
 
   /* POST upload listing. */
@@ -293,12 +282,13 @@ module.exports = (app) => {
               global.logger.error(err);
             }
             if (isMatch) {
-              req.session.user = user;
-              global.logger.info('success');
+              global.logger.info('success', user);
+              res.header('Authorization', token(_user));
               res.json({
                 code: 200,
                 message: '登录成功',
                 data: {
+                  token: token(_user),
                   name: name,
                   src: user.src
                 }
