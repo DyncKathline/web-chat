@@ -13,7 +13,7 @@ const cmder = cmd => {
             resolve('success');
         })
     })
-}
+};
 
 const rmDirFiles = dir => {
     const dirPath = fs.readdirSync(dir);
@@ -22,7 +22,7 @@ const rmDirFiles = dir => {
         console.log(`rmove ${currentPath}`);
         fileTool.removeSync(currentPath);
     });
-}
+};
 
 module.exports = {
     cmder,

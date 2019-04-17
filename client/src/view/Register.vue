@@ -38,7 +38,7 @@ export default {
         this.$store.dispatch("registerSubmit", data).then(res => {
           if (res.status === "success") {
             this.$Toast({
-              content: res.data.data,
+              content: '注册成功',
               timeout: 1000,
               background: "#2196f3"
             });

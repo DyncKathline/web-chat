@@ -5,8 +5,8 @@
       <div class="wind-alert-title">{{title}}</div>
       <div class="wind-alert-content">{{content}}</div>
       <div class="wind-confirm-btns" >
-        <div class="wind-confirm-btn" @click="submit">{{ok}}</div>
-        <div class="wind-confirm-btn" @click="close">{{cancel}}</div>
+        <div class="wind-confirm-btn" @click="onSubmit">{{ok}}</div>
+        <div class="wind-confirm-btn" @click="onClose">{{cancel}}</div>
       </div>
     </div>
   </div>
@@ -41,13 +41,11 @@
       }
     },
     methods: {
-      submit() {
+      onSubmit() {
         this.show = false;
-        this.onSuccess('submit');
       },
-      close() {
+      onClose() {
         this.show = false;
-        this.onClose('close');
       }
     }
   }

@@ -143,7 +143,7 @@ const store = new Vuex.Store({
     registerSubmit({commit}, data) {
       return new Promise((resolve, reject) => {
         url.RegisterUser(data).then(res => {
-          if (res.data.errno === 0) {
+          if (res.data.code === 200) {
             resolve({
               status: 'success',
               data: res.data
@@ -162,7 +162,7 @@ const store = new Vuex.Store({
     loginSubmit({commit}, data) {
       return new Promise((resolve, reject) => {
         url.loginUser(data).then(res => {
-          if (res.data.errno === 0) {
+          if (res.data.code === 200) {
             resolve({
               status: 'success',
               data: res.data
@@ -181,7 +181,7 @@ const store = new Vuex.Store({
     getAllMessHistory({state, commit}, data) {
       return new Promise((resolve, reject) => {
         url.RoomHistoryAll(data).then(res => {
-          if (res.data.data.errno === 0) {
+          if (res.data.code === 200) {
             commit('addRoomDefatilInfosHis', res.data.data.data);
             if (!state.roomdetail.total) {
               commit('setTotal', res.data.data.total);

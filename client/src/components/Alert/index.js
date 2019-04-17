@@ -24,10 +24,11 @@ let Alert = (options) => {
 
   return new Promise((resolve, reject) => {
     // instance.show = true;
-    const onClose = (type) => {
-      resolve(type);
-    };
-    instance.onClose = onClose;
+    let closeBtn = instance.onClose;
+    instance.onClose = () => {
+      resolve();
+      closeBtn();
+    }
   });
 };
 

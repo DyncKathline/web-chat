@@ -36,17 +36,17 @@
           this.$store.dispatch("loginSubmit", data).then(res => {
             if (res.status === "success") {
               this.$Toast({
-                content: res.data.data,
+                content: '登录成功',
                 timeout: 3000,
                 background: "#2196f3"
               });
               this.$store.commit("setUserInfo", {
                 type: "userid",
-                value: res.data.name
+                value: res.data.data.name
               });
               this.$store.commit("setUserInfo", {
                 type: "src",
-                value: res.data.src
+                value: res.data.data.src
               });
               this.$router.push({path: "/"});
               socket.emit("login", {name});

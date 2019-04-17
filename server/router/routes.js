@@ -124,7 +124,10 @@ module.exports = (app) => {
     if(!_user) {
       if(noSessionRequests.indexOf(req.url) === -1) {
         //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-        res.status(200).send({code: 600, message: 'token not available'});
+        res.status(200).json({
+          code: 600,
+          message: 'token not available'
+        });
       }else {
         next(); //如果请求的地址是登录则通过，进行下一个请求
       }
@@ -169,23 +172,22 @@ module.exports = (app) => {
           if (err) {
             global.logger.error(err);
             res.json({
-              errno: 500,
-              msg: '保存异常!'
+              code: 500,
+              message: '保存异常!'
             });
             return;
           }
           global.logger.info(mess);
           res.json({
-            errno: 200,
-            msg: '保存成功!'
+            code: 200,
+            message: '保存成功!'
           });
-        })
-        return;
+        });
       });
     } else {
       res.json({
-        errno: 500,
-        msg: '保存异常!'
+        code: 500,
+        message: '保存异常!'
       });
     }
 
@@ -219,25 +221,25 @@ module.exports = (app) => {
           if (err) {
             global.logger.error(err);
             res.json({
-              errno: 500,
-              msg: '保存异常!'
+              code: 500,
+              message: '保存异常!'
             });
             return;
 
           }
           res.json({
-            errno: 0,
+            code: 0,
             data: {
               url: img
             },
-            msg: '保存成功!'
+            message: '保存成功!'
           });
         })
       });
     } else {
       res.json({
-        errno: 500,
-        msg: '保存异常!'
+        code: 500,
+        message: '保存异常!'
       });
     }
 
@@ -245,7 +247,7 @@ module.exports = (app) => {
 
   // 注册
   app.post('/user/signup', (req, res) => {
-    const _user = req.body
+    const _user = req.body;
     // console.log(_user)
     User.findOne({name: _user.name}, (err, user) => {
       if (err) {
@@ -253,8 +255,8 @@ module.exports = (app) => {
       }
       if (user) {
         res.json({
-          errno: 1,
-          data: '用户名已存在'
+          code: 201,
+          message: '用户名已存在'
         })
       } else {
         user = new User(_user)
@@ -263,8 +265,8 @@ module.exports = (app) => {
             global.logger.error(err)
           }
           res.json({
-            errno: 0,
-            data: '注册成功'
+            code: 200,
+            message: '注册成功'
           })
         })
       }
@@ -281,8 +283,8 @@ module.exports = (app) => {
       }
       if (!user) {
         res.json({
-          errno: 1,
-          data: '用户不存在'
+          code: 202,
+          message: '用户不存在'
         })
       } else {
         if (!!password) {
@@ -294,23 +296,25 @@ module.exports = (app) => {
               req.session.user = user;
               global.logger.info('success');
               res.json({
-                errno: 0,
-                data: '登录成功',
-                name: name,
-                src: user.src
+                code: 200,
+                message: '登录成功',
+                data: {
+                  name: name,
+                  src: user.src
+                }
               })
             } else {
               res.json({
-                errno: 1,
-                data: '密码不正确'
-              })
+                code: 203,
+                message: '密码不正确'
+              });
               global.logger.info('password is not meached');
             }
           })
         } else {
           res.json({
-            errno: 1,
-            data: '登录失败'
+            code: 400,
+            message: '缺少参数'
           })
         }
       }
@@ -323,17 +327,17 @@ module.exports = (app) => {
     const current = req.query.current;
     const total = req.query.total || 0;
     if (!id || !current) {
-      global.logger.error('roomid | page current can\'t find')
+      global.logger.error('roomid | page current can\'t find');
       res.json({
-        errno: 1
+        code: 400,
+        message: '缺少参数'
       });
     }
     const message = {
-      errno: 0,
       data: {},
       total: 0,
       current: current
-    }
+    };
     try {
       Message.find({roomid: id}).count().exec((err, messageTotal) => {
         message.total = messageTotal;
@@ -344,13 +348,16 @@ module.exports = (app) => {
         Message.find({roomid: id}).skip(skip).sort({"time": -1}).limit(20).exec((err, messageData) => {
           message.data = messageData.reverse();
           res.json({
+            code: 200,
             data: message
           })
         });
       });
     } catch (e) {
       res.json({
-        data: message
+        code: 204,
+        data: message,
+        message: '获取历史记录失败'
       })
     }
   });
@@ -367,7 +374,9 @@ module.exports = (app) => {
           global.logger.error(err)
         }
         response.json({
-          data: res.text
+          code: 200,
+          data: res.text,
+          message: ''
         })
       });
   });

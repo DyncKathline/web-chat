@@ -148,13 +148,13 @@
         // 防止未登录
         this.$router.push({path: '/login'});
       }
-      url.getNotice().then(res => {
-        this.noticeList = res.data.noticeList;
-        if (res.data.version !== res.data.version) {
-          this.noticeBar = false;
-        }
-        this.noticeVersion = res.data.version;
-      });
+//      url.getNotice().then(res => {
+//        this.noticeList = res.data.noticeList;
+//        if (res.data.version !== res.data.version) {
+//          this.noticeBar = false;
+//        }
+//        this.noticeVersion = res.data.version;
+//      });
     },
     mounted() {
       this.container = document.querySelector('.chat-inner');

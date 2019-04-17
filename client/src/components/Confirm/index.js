@@ -24,14 +24,16 @@ let Confirm = (options) => {
 
   return new Promise((resolve, reject) => {
     // instance.show = true;
-    const onSuccess = (type) => {
-      resolve(type);
+    let successBtn = instance.onSubmit;
+    let closeBtn = instance.onClose;
+    instance.onSubmit = () => {
+      resolve("submit");
+      successBtn();
     };
-    const onClose = (type) => {
-      resolve(type);
-    };
-    instance.onSubmit = onSuccess;
-    instance.onClose = onClose;
+    instance.onClose = () => {
+      reject("close");
+      closeBtn();
+    }
   });
 };
 

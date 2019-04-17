@@ -9,6 +9,7 @@ import 'muse-ui/dist/muse-ui.css';
 import './assets/css/main.scss';
 import socket from './socket';
 import {queryString} from './utils/queryString';
+import errorCode from "./utils/errorCode";
 
 import vuePicturePreview from './components/photo-viewer';
 Vue.use(vuePicturePreview);
@@ -23,6 +24,7 @@ Vue.use(Toast);
 
 Vue.use(MuseUI);
 Vue.config.productionTip = false;
+Vue.prototype.$errorCode = errorCode;
 
 const Notification = window.Notification;
 

@@ -5,7 +5,7 @@
       <div class="wind-alert-title">{{title}}</div>
       <div v-if="content" class="wind-alert-content">{{content}}</div>
       <div v-if="html" class="wind-alert-content" v-html="html"></div>
-      <div class="wind-alert-btn" @click="close">{{btn}}</div>
+      <div class="wind-alert-btn" @click="onClose">{{btn}}</div>
     </div>
   </div>
 </template>
@@ -39,9 +39,8 @@
       }
     },
     methods: {
-      close() {
+      onClose() {
         this.show = false;
-        this.onClose('close');
       }
     }
   }

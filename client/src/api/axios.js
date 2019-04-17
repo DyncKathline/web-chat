@@ -5,14 +5,15 @@ const baseURL = 'http://localhost:9090';
 
 const instance = axios.create();
 
+instance.defaults.baseURL = baseURL;
 instance.defaults.timeout = 30000; // 所有接口30s超时
 instance.defaults.withCredentials = true; // 允许跨域
 
 // 请求统一处理
 instance.interceptors.request.use(config => {
-  if (config.url && config.url.charAt(0) === '/') {
-    config.url = `${baseURL}${config.url}`;
-  }
+  // if (config.url && config.url.charAt(0) === '/') {
+  //   config.url = `${baseURL}${config.url}`;
+  // }
 
   return config;
 }, error => Promise.reject(error));
