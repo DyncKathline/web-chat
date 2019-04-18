@@ -88,6 +88,7 @@
               timeout: 3000,
               background: "#2196f3"
             });
+//            this.chatwindow(res.data.data._id);
           }else {
             this.$Alert({
               show: true,

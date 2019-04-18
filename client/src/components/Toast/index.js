@@ -41,6 +41,7 @@ let Toast = (options) => {
     timer = null;
     instance.content = '';
     document.body.removeChild(instance.vm.$el);
+    instance = null;
   }, time);
 };
 

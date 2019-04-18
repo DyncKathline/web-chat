@@ -363,13 +363,17 @@ module.exports = (app) => {
         global.logger.error(err)
       }
       if (room) {
-        // console.log('room create ------', res, err);
-        let userRoom = new UserRoom({
-          userId: _room.userId,
-          roomId: room._id,
-        });
-        userRoom.save((err, res) => {
-          // console.log('UserRoom create ------', res, err);
+        UserRoom.findOne({userId: _room.userId,roomId: room._id}, (err, res) => {
+          console.log('room create ------', res, err);
+          if(!res) {
+            let userRoom = new UserRoom({
+              userId: _room.userId,
+              roomId: room._id,
+            });
+            userRoom.save((err, res) => {
+              // console.log('UserRoom create ------', res, err);
+            });
+          }
         });
         res.json({
           code: 200,
