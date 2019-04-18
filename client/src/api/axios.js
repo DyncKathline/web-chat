@@ -14,7 +14,6 @@ instance.interceptors.request.use(request => {
   const qmai_token = window.localStorage.getItem('qmai_token');
   if (qmai_token) {
     // 此处有坑，下方记录
-    //request.headers.common['Authorization'] =`Bearer ${qmai_token}`;
     request.headers['Authorization'] =`Bearer ${qmai_token}`;
   }
 

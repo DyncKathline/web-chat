@@ -283,7 +283,6 @@ module.exports = (app) => {
             }
             if (isMatch) {
               global.logger.info('success', user);
-              res.header('Authorization', token(_user));
               res.json({
                 code: 200,
                 message: '登录成功',
@@ -310,6 +309,10 @@ module.exports = (app) => {
       }
 
     })
+  });
+  //退出
+  app.get('/user/logout', (req, res) => {
+
   });
   // 获取历史记录
   app.get('/history/message', (req, res) => {

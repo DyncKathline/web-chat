@@ -71,6 +71,7 @@ function gethAllCache(id) {
 }
 
 module.exports = {
+    client,
     inrcCache,
     getCacheById,
     updateCache,
