@@ -16,9 +16,9 @@
         <mu-list-item title="修改头像" @click="changeAvatar">
           <mu-icon slot="left" value="send"/>
         </mu-list-item>
-        <mu-list-item title="赞助一下" @click="handleTips">
+        <!--<mu-list-item title="赞助一下" @click="handleTips">
           <mu-icon slot="left" value="inbox"/>
-        </mu-list-item>
+        </mu-list-item>-->
         <mu-list-item title="github地址" @click="handleGithub">
           <mu-icon slot="left" value="grade"/>
         </mu-list-item>
@@ -92,12 +92,8 @@ export default {
             type: "src",
             value: ""
           });
-          this.$store.commit("setUnread", {
-            room1: 0,
-            room2: 0
-          });
-          this.$router.push("/");
-          this.$store.commit("setTab", false);
+          clear();
+          this.$router.push("/login");
         }
       });
     },

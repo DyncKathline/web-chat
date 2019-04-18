@@ -51,7 +51,7 @@ socket.on('connect', () => {
   const roomId = queryString(window.location.href, 'roomId');
   const userId = store.state.userInfo.userid;
   if (userId) {
-    socket.emit('login', {name: userId});
+    socket.emit('login', {userId: userId});
   }
   if (roomId) {
     const obj = {

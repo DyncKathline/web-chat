@@ -15,7 +15,7 @@ const jwtAuth = path => expressJwt({secret: secretKey}).unless({path: path});
  * @param payload  object,但是不能嵌套object，例如：{name: '小宝',sex: '女'}
  */
 const token = payload => jwt.sign(payload, secretKey, {
-  expiresIn : 30//60 * 60 * 24 // 授权时效24小时
+  expiresIn : 60 * 60 * 24 // 授权时效24小时
 });
 
 module.exports = {

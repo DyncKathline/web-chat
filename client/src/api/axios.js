@@ -1,5 +1,6 @@
 import axios from 'axios';
 import router from "../router"
+import {setItem, getItem, removeItem} from '../utils/localStorage';
 
 const baseURL = 'http://localhost:9090';
 
@@ -11,7 +12,7 @@ instance.defaults.withCredentials = true; // 允许跨域
 
 // 请求统一处理
 instance.interceptors.request.use(request => {
-  const qmai_token = window.localStorage.getItem('qmai_token');
+  const qmai_token = getItem('qmai_token');
   if (qmai_token) {
     // 此处有坑，下方记录
     request.headers['Authorization'] =`Bearer ${qmai_token}`;
@@ -24,14 +25,13 @@ instance.interceptors.request.use(request => {
 instance.interceptors.response.use(response => {
   if (response.status === 200) {
     if(response.data.code == 600) {//token过期
-      window.localStorage.removeItem('qmai_token');
+      removeItem('qmai_token');
       router.replace({
         path: "/login"
       });
     }else {
-      if (response.data.data.token) {
-        console.log('token:', response.data.data.token);
-        window.localStorage.setItem('qmai_token', response.data.data.token);
+      if (response.data.code == 200 && response.data.data.token) {
+        setItem('qmai_token', response.data.data.token);
       }
     }
     return response;

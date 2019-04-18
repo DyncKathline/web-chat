@@ -1,5 +1,7 @@
 const User = require('../models/user');
 const Message = require('../models/message');
+const Room = require('../models/room');
+const UserRoom = require('../models/userRoom');
 const superagent = require('superagent');
 const path = require('path');
 const fs = require('fs');
@@ -288,7 +290,7 @@ module.exports = (app) => {
                 message: '登录成功',
                 data: {
                   token: token(_user),
-                  name: name,
+                  user: user,
                   src: user.src
                 }
               })
@@ -311,8 +313,120 @@ module.exports = (app) => {
     })
   });
   //退出
-  app.get('/user/logout', (req, res) => {
+  app.post('/user/logout', (req, res) => {
 
+  });
+  //新建房间
+  app.post('/room/create', (req, res) => {
+    const _room = req.body;
+    // console.log(_room)
+    Room.findOne({name: _room.name}, (err, room) => {
+      if (err) {
+        global.logger.error(err)
+      }
+      if (room) {
+        res.json({
+          code: 205,
+          message: '房间名已存在'
+        })
+      } else {
+        let room = new Room({
+          name: _room.name,
+        });
+        room.save((err, room) => {
+          if (err) {
+            global.logger.error(err)
+          }
+          // console.log('room create ------', res, err);
+          let userRoom = new UserRoom({
+            userId: _room.userId,
+            roomId: room._id,
+          });
+          userRoom.save((err, res) => {
+            // console.log('UserRoom create ------', res, err);
+          });
+          res.json({
+            code: 200,
+            data: room,
+            message: '房间创建成功'
+          })
+        })
+      }
+    })
+  });
+  //加入房间
+  app.post('/room/add', (req, res) => {
+    const _room = req.body;
+    // console.log(_room)
+    Room.findOne({name: _room.name}, (err, room) => {
+      if (err) {
+        global.logger.error(err)
+      }
+      if (room) {
+        // console.log('room create ------', res, err);
+        let userRoom = new UserRoom({
+          userId: _room.userId,
+          roomId: room._id,
+        });
+        userRoom.save((err, res) => {
+          // console.log('UserRoom create ------', res, err);
+        });
+        res.json({
+          code: 200,
+          data: room,
+          message: '房间加入成功'
+        })
+      } else {
+        res.json({
+          code: 207,
+          data: room,
+          message: '房间加入失败'
+        })
+      }
+    })
+  });
+  //删除房间
+  app.post('/room/delete', (req, res) => {
+    const _room = req.body;
+    var wherestr = {'name': _room.name};
+    // console.log(_room)
+    Room.remove(wherestr, (err, room) => {
+      if (err) {
+        global.logger.error(err)
+      }
+      if (room) {
+        res.json({
+          code: 200,
+          message: '房间删除成功'
+        })
+      } else {
+        res.json({
+          code: 206,
+          data: room,
+          message: '房间删除失败'
+        })
+      }
+    })
+  });
+  //获取用户所有房间
+  app.post('/room/getUserAllRoom', (req, res) => {
+    const userId = req.body.userId;
+    console.log('socket login!', userId);
+    UserRoom.find({userId: userId})
+      .populate('userId')
+      .populate('roomId')
+      .exec((err, data) => {
+        if(err) {
+          global.logger.error(err);
+          return;
+        }
+        // console.log('socket userRoom-----', data);
+        res.json({
+          code: 200,
+          message: '获取用户房间列表成功',
+          data: data
+        })
+      });
   });
   // 获取历史记录
   app.get('/history/message', (req, res) => {
@@ -342,6 +456,7 @@ module.exports = (app) => {
           message.data = messageData.reverse();
           res.json({
             code: 200,
+            message: '获取历史记录成功',
             data: message
           })
         });

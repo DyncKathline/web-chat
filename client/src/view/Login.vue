@@ -34,7 +34,7 @@
             password: password
           };
           this.$store.dispatch("loginSubmit", data).then(res => {
-            if (res.status === "success") {
+            if (res.code === 200) {
               this.$Toast({
                 content: '登录成功',
                 timeout: 3000,
@@ -42,21 +42,24 @@
               });
               this.$store.commit("setUserInfo", {
                 type: "userid",
-                value: res.data.data.name
+                value: res.data.user._id
+              });
+              this.$store.commit("setUserInfo", {
+                type: "name",
+                value: res.data.user.name
               });
               this.$store.commit("setUserInfo", {
                 type: "src",
-                value: res.data.data.src
+                value: res.data.user.src
               });
               this.$router.push({path: "/"});
-              socket.emit("login", {name});
+              socket.emit("login", {userId: res.data.user._id});
             } else {
               this.$Alert({
                 show: true,
-                content: res.data.data
+                content: this.$errorCode[res.code]
               });
             }
-            document.form2.reset();
           });
         } else {
           this.$Alert({

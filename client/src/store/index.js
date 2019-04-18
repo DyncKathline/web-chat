@@ -3,7 +3,8 @@
  */
 import Vue from 'vue';
 import Vuex from 'vuex';
-import url from '../api/server.js';
+import {postUploadAvatar, postUploadFile, RegisterUser,
+  loginUser, RoomHistoryAll, getRobotMessage} from '../api/server.js';
 import {setItem, getItem} from '../utils/localStorage';
 import {ROBOT_NAME, ROBOT_URL} from '../const/index';
 
@@ -13,10 +14,10 @@ const store = new Vuex.Store({
   state: {
     userInfo: {
       src: getItem('src'),
-      userid: getItem('userid')
+      userid: getItem('userid'),
+      name: getItem('name')
     },
     isDiscount: false,
-    isLogin: false,
     // 存放房间信息，为了方便以后做多房间
     roomdetail: {
       id: '',
@@ -53,8 +54,7 @@ const store = new Vuex.Store({
         msg: '如果还有什么想知道的可以问我'
       }],
     unRead: {
-      room1: 0,
-      room2: 0
+
     },
     // 是否启动tab
     istab: false,
@@ -83,9 +83,6 @@ const store = new Vuex.Store({
       for (let i in value) {
         state.unRead[i] = +value[i];
       }
-    },
-    setLoginState(state, value) {
-      state.isLogin = value;
     },
     setUserInfo(state, data) {
       const {type, value} = data;
@@ -118,7 +115,7 @@ const store = new Vuex.Store({
   actions: {
     uploadAvatar({commit}, data) {
       return new Promise((resolve, reject) => {
-        url.postUploadAvatar(data).then(res => {
+        postUploadAvatar(data).then(res => {
           reject(res.data)
         }).catch(function (err) {
           reject(err);
@@ -127,7 +124,7 @@ const store = new Vuex.Store({
     },
     uploadImg({commit}, data) {
       return new Promise((resolve, reject) => {
-        url.postUploadFile(data).then(res => {
+        postUploadFile(data).then(res => {
           if (res) {
             resolve(res);
             if (res.data.errno === 0) {
@@ -142,7 +139,7 @@ const store = new Vuex.Store({
     },
     registerSubmit({commit}, data) {
       return new Promise((resolve, reject) => {
-        url.RegisterUser(data).then(res => {
+        RegisterUser(data).then(res => {
           if (res.data.code === 200) {
             resolve({
               status: 'success',
@@ -161,18 +158,8 @@ const store = new Vuex.Store({
     },
     loginSubmit({commit}, data) {
       return new Promise((resolve, reject) => {
-        url.loginUser(data).then(res => {
-          if (res.data.code === 200) {
-            resolve({
-              status: 'success',
-              data: res.data
-            });
-          }else {
-            resolve({
-              status: 'fail',
-              data: res.data
-            });
-          }
+        loginUser(data).then(res => {
+          resolve(res.data);
         }).catch(function (err) {
           reject(err);
         });
@@ -180,7 +167,7 @@ const store = new Vuex.Store({
     },
     getAllMessHistory({state, commit}, data) {
       return new Promise((resolve, reject) => {
-        url.RoomHistoryAll(data).then(res => {
+        RoomHistoryAll(data).then(res => {
           if (res.data.code === 200) {
             commit('addRoomDefatilInfosHis', res.data.data.data);
             if (!state.roomdetail.total) {
@@ -197,7 +184,7 @@ const store = new Vuex.Store({
       const username = ROBOT_NAME;
       const src = ROBOT_URL;
       return new Promise((resolve, reject) => {
-        url.getRobotMessage(data).then(res => {
+        getRobotMessage(data).then(res => {
           if (res) {
             const robotdata = JSON.parse(res.data.data);
             let msg = '';
