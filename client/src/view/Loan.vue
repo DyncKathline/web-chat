@@ -60,6 +60,10 @@
           this.$store.commit("setUnread", userCount);
           console.log(userCount);
         });
+      }else {
+          this.$router.replace({
+              path: "/login"
+          });
       }
     },
     methods: {

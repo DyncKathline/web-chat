@@ -29,43 +29,46 @@ function websocket(server) {
   const io = require('socket.io')(server);
   const users = {};
 
-  setInterval(() => {
-    gethAllCache('socketId').then(usersList => {
-      for (let i = 0; i < usersList.length; i++) {
-        const name = usersList[i];
-        for (let j = 0; j < roomList.length; j++) {
-          const roomid = roomList[j];
-          const username = `${name}-${roomid}`;
-          getCacheById(username).then(roomInfo => {
-            findOne({username}).then(res => {
-              if (res) {
-                Count.update({username}, {roomInfo}, (err) => {
-                  if (err) {
-                    console.log('更新失败');
-                  }
-                })
-              } else {
-                const count = new Count({
-                  username,
-                  roomInfo: +roomInfo
-                });
-                count.save(function (err, res) {
-                  if (err) {
-                    global.logger.error(err);
-                    return;
-                  }
-                  global.logger.info(res);
-                })
-              }
-            });
-          });
-        }
-      }
-    });
-  }, 100 * 60 * 1000);
   io.on('connection', (socket) => {
     //监听用户发布聊天内容
     console.log('socket connect!');
+    if (socket.timing) {
+      clearInterval(socket.timing);
+    }
+    // socket.timing = setInterval(() => {
+    //   gethAllCache('socketId').then(usersList => {
+    //     for (let i = 0; i < usersList.length; i++) {
+    //       const name = usersList[i];
+    //       for (let j = 0; j < roomList.length; j++) {
+    //         const roomid = roomList[j];
+    //         const username = `${name}-${roomid}`;
+    //         getCacheById(username).then(roomInfo => {
+    //           findOne({username}).then(res => {
+    //             if (res) {
+    //               Count.update({username}, {roomInfo}, (err) => {
+    //                 if (err) {
+    //                   console.log('更新失败');
+    //                 }
+    //               })
+    //             } else {
+    //               const count = new Count({
+    //                 username,
+    //                 roomInfo: +roomInfo
+    //               });
+    //               count.save(function (err, res) {
+    //                 if (err) {
+    //                   global.logger.error(err);
+    //                   return;
+    //                 }
+    //                 global.logger.info(res);
+    //               })
+    //             }
+    //           });
+    //         });
+    //       }
+    //     }
+    //   });
+    // }, 15 * 60 * 1000);
 
     socket.on('message', (msgObj) => {
       console.log('socket message!');
@@ -114,7 +117,7 @@ function websocket(server) {
     // 建立连接
     socket.on('login', (user) => {
       console.log('socket login!', user);
-      const {userId} = user;
+      const {userId,} = user;
       if (!userId) {
         return;
       }
@@ -193,16 +196,17 @@ function websocket(server) {
     });
 
     socket.on('roomout', (user) => {
-      console.log('socket loginout!');
+      console.log('socket leave room!');
       const {name, roomid} = user;
       handleLogoutRoom(roomid, name);
-    })
+    });
 
     socket.on('disconnect', () => {
       console.log('socket disconnect!');
       const {name, roomid} = socket;
+      clearInterval(socket.timing);
       handleLogoutRoom(roomid, name);
-    })
+    });
 
     const handleLogoutRoom = (roomid, name) => {
       try {
@@ -222,7 +226,7 @@ function websocket(server) {
         console.log(e);
       }
     }
-  })
+  });
 }
 
 function findOne(query) {
@@ -237,4 +241,4 @@ function findOne(query) {
   })
 }
 
-module.exports = websocket
+module.exports = websocket;

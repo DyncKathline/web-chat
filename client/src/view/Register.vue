@@ -55,7 +55,7 @@ export default {
           } else {
             this.$Alert({
               show: true,
-              content: res.data.data
+                content: this.$errorCode[res.data.code]
             });
           }
         });

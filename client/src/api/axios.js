@@ -30,7 +30,7 @@ instance.interceptors.response.use(response => {
         path: "/login"
       });
     }else {
-      if (response.data.code == 200 && response.data.data.token) {
+      if (response.data.code == 200 && response.data.data && response.data.data.token) {
         setItem('qmai_token', response.data.data.token);
       }
     }

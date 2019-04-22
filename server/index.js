@@ -30,12 +30,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 require('./router/routes.js')(app);
 
 if ('development' === app.get('env')) {
-  app.set('showStackError', true)
-  // app.use(morgan(':method :url :status'))
-  app.use(log4js.connectLogger(logger, {level:log4js.levels.INFO}))
-  app.locals.pretty = true
-  mongoose.set('debug', true)
+  app.set('showStackError', true);
+  app.locals.pretty = true;
+  mongoose.set('debug', true);
 }
+// app.use(log4js.connectLogger(logger, {level:log4js.levels.INFO}));
+app.use(log4js.connectLogger(logger, {level:'auto', format:':method :url  :status  :response-time ms'}));
 
 var server = app.listen(port)
 // websocket
