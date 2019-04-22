@@ -11,7 +11,7 @@ const fileTool = require('fs-extra');
 const imagemin = require('imagemin');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminPngquant = require('imagemin-pngquant');
-const {token, jwtAuth} = require('../utils/jwtAuth');
+const {jwtSign, jwtAuth, jwtDecode} = require('../utils/jwtAuth');
 const {sendTemplateMail} = require('../server_modules/mail');
 
 const mkdirsSync = function (dirname) {
@@ -118,13 +118,7 @@ module.exports = (app) => {
   app.use((err, req, res, next) => {
     if (err.name === 'UnauthorizedError') {
       //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-      if(err.inner.message === 'jwt expired') {
-        const date = err.inner.expiredAt;
-        let curTime = new Date().getTime();
-        let time = new Date(date).getTime();
-        console.log('token----', curTime, time, curTime - time);
-      }
-      res.status(200).json({
+      res.json({
         code: 600,
         message: err
       });
@@ -297,7 +291,7 @@ module.exports = (app) => {
                 code: 200,
                 message: '登录成功',
                 data: {
-                  token: token({id: user._id}),
+                  token: jwtSign({id: user._id}),
                   user: user,
                   src: user.src
                 }
